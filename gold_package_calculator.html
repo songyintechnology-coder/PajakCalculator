@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172b4d">
+<title>黄金配套计算器</title>
+<style>
+:root{--navy:#172b4d;--gold:#c79b42;--bg:#f5f6f8;--line:#e5e7eb;--muted:#667085}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,"Microsoft YaHei",sans-serif;color:#202939}
+main{max-width:980px;margin:0 auto;padding:28px 18px 42px}
+header{text-align:center;margin:8px 0 26px}
+h1{font-size:27px;margin:0 0 8px;color:var(--navy)}
+.sub{color:var(--muted);font-size:14px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 5px 20px #172b4d0b}
+label{display:block;font-weight:700;margin-bottom:9px}
+.input-wrap{display:flex;align-items:center;border:1.5px solid #cbd5e1;border-radius:11px;overflow:hidden;max-width:360px}
+.currency{padding:13px 14px;background:#f8fafc;color:var(--muted);font-weight:700;border-right:1px solid var(--line)}
+input{border:0;outline:0;width:100%;font-size:21px;padding:12px 13px;color:var(--navy);font-weight:700}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.card{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card-head{background:var(--navy);color:white;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.card-head strong{font-size:18px}
+.percent{color:#f5d58d;font-weight:700}
+.card-body{padding:16px}
+.metric{padding:11px 0;border-bottom:1px solid #eef0f3;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.metric:last-child{border-bottom:0}
+.metric span{font-size:13px;color:var(--muted)}
+.metric b{font-size:15px;text-align:right}
+.metric.primary{background:#fbf7ed;margin:0 -8px 8px;padding:13px 8px;border-radius:8px}
+.metric.primary b{font-size:20px;color:#946b1d}
+.term{display:inline-block;background:#f0f3f8;color:var(--navy);font-size:12px;font-weight:700;padding:5px 9px;border-radius:20px}
+.foot{color:var(--muted);font-size:12px;line-height:1.6;margin:18px 2px 0}
+@media(max-width:700px){main{padding:20px 13px 32px}.cards{grid-template-columns:1fr}.card-head{padding:15px 17px}.card-body{padding:12px 17px}h1{font-size:23px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>黄金配套计算器</h1>
+  <div class="sub">输入黄金价格（RM/克），自动计算三种配套</div>
+</header>
+<section class="panel">
+  <label for="price">黄金价格 / 克</label>
+  <div class="input-wrap"><span class="currency">RM</span><input id="price" type="number" min="0" step="0.01" value="600" inputmode="decimal"></div>
+  <div class="hint">修改价格后，以下所有配套金额会即时更新。</div>
+</section>
+<section class="cards" id="cards" aria-live="polite"></section>
+<p class="foot">计算方式：放款金额 = 黄金价格 × 抵押比例；一次性手续费及月费按各配套设定比例计算。以上为计算示例，实际金额请以最终合约及机构收费为准。</p>
+</main>
+<script>
+const packages = [
+ {name:"配套一",ratio:.80,once:.03,monthly:.015,months:6,audience:"要现金多"},
+ {name:"配套二",ratio:.70,once:0,monthly:.015,months:3,audience:"短期周转"},
+ {name:"配套三",ratio:.60,once:0,monthly:.02,months:6,audience:"长期存放"}
+];
+const money = n => "RM" + (Number.isFinite(n) ? n.toFixed(2) : "0.00");
+const priceInput = document.getElementById("price");
+function render(){
+ const price = Math.max(0, Number(priceInput.value) || 0);
+ document.getElementById("cards").innerHTML = packages.map(p=>{
+   const loan=price*p.ratio, once=loan*p.once, monthly=loan*p.monthly;
+   return `<article class="card">
+    <div class="card-head"><strong>${p.name}</strong><span class="percent">${Math.round(p.ratio*100)}%</span></div>
+    <div class="card-body">
+      <div class="metric"><span>抵押</span><b>${Math.round(p.ratio*100)}%</b></div>
+      <div class="metric primary"><span>放款 / 克</span><b>${money(loan)}</b></div>
+      <div class="metric"><span>一次性手续费</span><b>${money(once)}</b></div>
+      <div class="metric"><span>月费</span><b>${money(monthly)}</b></div>
+      <div class="metric"><span>期限</span><b><span class="term">${p.months}个月</span></b></div>
+      <div class="metric"><span>适合人群</span><b>${p.audience}</b></div>
+    </div></article>`;
+ }).join("");
+}
+priceInput.addEventListener("input",render);
+render();
+</script>
+</body>
+</html>
